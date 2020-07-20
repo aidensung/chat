@@ -16,7 +16,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 
-import { ReactComponent as Logo } from '../../assets/code_w-name_200x200.svg';
+import { ReactComponent as Logo } from '../../assets/chat.svg';
 
 const Header = ({ currentUser, signOutStart }) => {
   const [hidden, setHidden] = useState({
@@ -33,17 +33,21 @@ const Header = ({ currentUser, signOutStart }) => {
   const handleScroll = useCallback(() => {
     if (window.scrollY > height) {
       headerRef.current.classList.add('scroll');
-      removeDropdown();
+      if (!hidden) removeDropdown();
     } else {
       headerRef.current.classList.remove('scroll');
     }
-  }, [height]);
+  }, [height, hidden]);
 
   const handleResize = useCallback(() => {
     if (window.innerWidth > 768) {
-      removeDropdown();
+      if (!hidden) removeDropdown();
     }
-  }, []);
+  }, [hidden]);
+
+  // const handleClick = useCallback(() => {
+  //   removeDropdown();
+  // }, []);
 
   const toggleDropdown = () => {
     optionContainerRef.current.childNodes.forEach((child) =>
@@ -63,9 +67,13 @@ const Header = ({ currentUser, signOutStart }) => {
     setHeight(headerRef.current.clientHeight * 0.4);
 
     window.addEventListener('scroll', handleScroll);
-
     window.addEventListener('resize', handleResize);
-  }, [handleScroll, handleResize]);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [handleResize, handleScroll, currentUser]);
 
   return (
     <HeaderContainer ref={headerRef}>
@@ -76,16 +84,23 @@ const Header = ({ currentUser, signOutStart }) => {
         <OptionLink className='options' to='/' onClick={removeDropdown}>
           HOME
         </OptionLink>
-        <OptionLink className='options' to='/project' onClick={removeDropdown}>
-          PROJECT
+        <OptionLink
+          className='options'
+          to='/chat'
+          onClick={() => {
+            removeDropdown();
+            if (!currentUser) alert('Login first');
+          }}
+        >
+          CHAT
         </OptionLink>
         {currentUser ? (
           <OptionLink
             className='options'
             to='/'
-            onClick={(event) => {
+            onClick={() => {
               signOutStart();
-              removeDropdown(event);
+              removeDropdown();
             }}
           >
             SIGN OUT

@@ -4,13 +4,17 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
+const socketio = require('socket.io');
+const http = require('http');
 
 const config = require('./config/key');
 
-const { User } = require('./models/User');
-const { auth } = require('./middleware/auth');
-
 const app = express();
+const server = http.createServer(app);
+const io = socketio(server);
+
+module.exports = { io };
+
 const port = process.env.PORT || 5000;
 
 mongoose
@@ -32,6 +36,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 
+app.use('/api/users', require('./routes/users'));
+app.use('/api/chat', require('./routes/chat'));
+
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 
@@ -41,51 +48,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(port, (error) => {
+server.listen(port, (error) => {
   if (error) throw error;
   console.log('Server running on port ' + port);
-});
-
-app.post('/api/users/signup', (req, res) => {
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (user) return res.status(409).json(err);
-
-    const newUser = new User(req.body);
-
-    newUser.save((err, user) => {
-      if (err) return res.status(400).json(err);
-      return res.status(200).json(req.body);
-    });
-  });
-});
-
-app.post('/api/users/signin', (req, res) => {
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (!user) {
-      return res.status(401).json(err);
-    }
-
-    user.comparePassword(req.body.password, (err, isMatch) => {
-      if (!isMatch) {
-        return res.status(401).json(err);
-      }
-
-      user.generateToken((err, user) => {
-        if (err) return res.status(400).json(err);
-
-        return res.cookie('x_auth', user.token).status(200).json(user);
-      });
-    });
-  });
-});
-
-app.get('/api/users/signout', auth, (req, res) => {
-  User.findOneAndUpdate({ _id: req.user._id }, { token: '' }, (err, user) => {
-    if (err) return res.status(400).json(err);
-    return res.status(200).clearCookie('x_auth').json(user);
-  });
-});
-
-app.get('/api/users/auth', auth, (req, res) => {
-  return res.status(200).json(req.user);
 });

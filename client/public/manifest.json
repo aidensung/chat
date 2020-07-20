@@ -1,6 +1,6 @@
 {
-  "short_name": "Boiler Plate",
-  "name": "Boiler Plate by Aiden",
+  "short_name": "Chat App",
+  "name": "Chat App using MERN by Aiden",
   "icons": [
     {
       "src": "favicon.ico",

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 
 import HomePage from './pages/homepage/homepage.component';
-import ProjectPage from './pages/projectpage/projectpage.component';
+import ChatPage from './pages/chatpage/chatpage.component';
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
 import Header from './components/header/header.component';
 
@@ -26,14 +26,16 @@ const App = ({ checkUserAuth, currentUser }) => {
         <Route exact path='/' component={HomePage} />
         <Route
           exact
-          path='/project'
-          render={() => (!currentUser ? <Redirect to='/' /> : <ProjectPage />)}
+          path='/chat'
+          render={() =>
+            !currentUser ? <Redirect to='/signin' /> : <ChatPage />
+          }
         />
         <Route
           exact
           path='/signin'
           render={() =>
-            currentUser ? <Redirect to='/' /> : <SignInAndSignUpPage />
+            currentUser ? <Redirect to='/chat' /> : <SignInAndSignUpPage />
           }
         />
       </Switch>

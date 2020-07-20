@@ -13,9 +13,11 @@ import {
   signUpFailure,
 } from './user.actions';
 
+import { USER_SERVER } from '../../Config';
+
 const signInWithEmailAndPassword = (emailAndPassword) => {
   const signInResponse = axios
-    .post('/api/users/signin', emailAndPassword)
+    .post(`${USER_SERVER}/signin`, emailAndPassword)
     .then((response) => response.data);
 
   return signInResponse;
@@ -35,7 +37,9 @@ export function* onEmailSignInStart() {
 }
 
 const getCurrentUser = () => {
-  const user = axios.get('/api/users/auth').then((response) => response.data);
+  const user = axios
+    .get(`${USER_SERVER}/auth`)
+    .then((response) => response.data);
 
   return user;
 };
@@ -55,7 +59,7 @@ export function* onCheckUserAuth() {
 }
 
 const signOutRequest = () => {
-  axios.get('/api/users/signout').then((response) => response.data);
+  axios.get(`${USER_SERVER}/signout`).then((response) => response.data);
 };
 
 export function* signOut() {
@@ -73,7 +77,7 @@ export function* onSignOutStart() {
 
 const signUpRequest = (userCredentials) => {
   const signUpResponse = axios
-    .post('/api/users/signup', userCredentials)
+    .post(`${USER_SERVER}/signup`, userCredentials)
     .then((response) => response.data);
 
   return signUpResponse;

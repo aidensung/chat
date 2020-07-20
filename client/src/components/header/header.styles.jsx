@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 export const HeaderContainer = styled.div`
   position: fixed;
+  top: 0;
   width: 100%;
   z-index: 1;
   display: flex;
@@ -75,13 +76,13 @@ export const OptionLink = styled(Link)`
   margin: 4px 0;
   cursor: pointer;
 
-  color: black;
+  color: #f03b2c;
   background: white;
   box-shadow: 4px 4px 4px 0 grey;
 
   &:hover {
     color: white;
-    background: black;
+    background: #f03b2c;
   }
 
   &.open {

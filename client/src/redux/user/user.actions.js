@@ -1,4 +1,3 @@
-// import axios from 'axios';
 import UserActionTypes from './user.types';
 
 export const emailSignInStart = (emailAndPassword) => ({
