@@ -16,7 +16,13 @@ import { ChatPageContainer } from './chatpage.styles';
 
 import MessageCard from '../../components/chat-card/chat-card.component';
 
-const ENDPOINT = 'http://localhost:5000';
+let ENDPOINT;
+
+if (process.env.NODE_ENV === 'development') {
+  ENDPOINT = 'http://localhost:5000';
+} else {
+  ENDPOINT = 'https://chat-aiden.herokuapp.com';
+}
 
 const ChatPage = ({
   currentUser,
