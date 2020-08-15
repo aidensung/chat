@@ -25,9 +25,9 @@ mongoose
     useFindAndModify: false,
   })
   .then(() => {
-    console.log('MongoDB Connected...');
+    console.log('MongoDB connected...');
   })
-  .catch((err) => {
+  .catch(() => {
     console.log(err);
   });
 

@@ -1,15 +1,39 @@
 import React from 'react';
 
-const MessageCard = ({ message }) => {
+import {
+  MessageCardContainer,
+  MessageContainer,
+  SenderAndTimeContainer,
+} from './chat-card.styles';
+
+const MessageCard = ({ message, currentUser }) => {
   const { sender, content, time } = message;
 
   return (
-    <div style={{ padding: '0 5px', marginBottom: '8px' }}>
-      <span>{sender.firstname} </span>
-      <span>{new Date(time).toLocaleString()}</span>
-      <br />
-      <span>{content}</span>
-    </div>
+    <MessageCardContainer
+      className={sender.email !== currentUser.email ? 'fromsomebody' : 'fromme'}
+    >
+      <SenderAndTimeContainer>
+        <span>
+          {sender.email === currentUser.email ? null : sender.firstname}
+        </span>
+        <span>
+          {new Date(time).toLocaleString('en', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </span>
+      </SenderAndTimeContainer>
+      <MessageContainer
+        className={
+          sender.email !== currentUser.email ? 'fromsomebody' : 'fromme'
+        }
+      >
+        {content}
+      </MessageContainer>
+    </MessageCardContainer>
   );
 };
 

@@ -31,7 +31,12 @@ router.post('/signin', (req, res) => {
       user.generateToken((err, user) => {
         if (err) return res.status(400).json(err);
 
-        return res.cookie('x_auth', user.token).status(200).json(user);
+        return res
+          .cookie('x_auth', user.token, {
+            sameSite: 'strict',
+          })
+          .status(200)
+          .json(user);
       });
     });
   });
@@ -40,7 +45,7 @@ router.post('/signin', (req, res) => {
 router.get('/signout', auth, (req, res) => {
   User.findOneAndUpdate({ _id: req.user._id }, { token: '' }, (err, user) => {
     if (err) return res.status(400).json(err);
-    return res.status(200).clearCookie('x_auth').json(user);
+    return res.status(200).clearCookie('x_auth').clearCookie('io').json(user);
   });
 });
 

@@ -12,10 +12,11 @@ export const HeaderContainer = styled.div`
   padding: 8px;
   background: white;
   transition: all 300ms ease-out;
+  /* box-shadow: 0px 2px 2px 0 grey; */
 
   &.scroll {
     background: white;
-    box-shadow: 0px 4px 4px 0 grey;
+    box-shadow: 0px 2px 2px 0 grey;
   }
 
   @media screen and (min-width: 768px) {
@@ -71,7 +72,7 @@ export const OptionsContainer = styled.div`
 
 export const OptionLink = styled(Link)`
   display: none;
-  width: 300px;
+  width: 100%;
   padding: 6px;
   margin: 4px 0;
   cursor: pointer;

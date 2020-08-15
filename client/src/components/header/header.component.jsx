@@ -45,9 +45,14 @@ const Header = ({ currentUser, signOutStart }) => {
     }
   }, [hidden]);
 
-  // const handleClick = useCallback(() => {
-  //   removeDropdown();
-  // }, []);
+  const handleClick = useCallback(
+    (e) => {
+      if (!headerRef.current.contains(e.target)) {
+        if (!hidden) removeDropdown();
+      }
+    },
+    [hidden]
+  );
 
   const toggleDropdown = () => {
     optionContainerRef.current.childNodes.forEach((child) =>
@@ -68,12 +73,14 @@ const Header = ({ currentUser, signOutStart }) => {
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
+    document.addEventListener('click', handleClick);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('click', handleClick);
     };
-  }, [handleResize, handleScroll, currentUser]);
+  }, [handleResize, handleScroll, handleClick]);
 
   return (
     <HeaderContainer ref={headerRef}>

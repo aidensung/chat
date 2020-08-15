@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+} from 'react';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import io from 'socket.io-client';
@@ -12,9 +18,20 @@ import {
   addMessage,
 } from '../../redux/chat/chat.actions';
 
-import { ChatPageContainer } from './chatpage.styles';
+import {
+  ChatPageContainer,
+  MessagesContainer,
+  FormContainer,
+  InputContainer,
+  ButtonContainer,
+  SearchInputContainer,
+  ScrollDownBtnContainer,
+} from './chatpage.styles';
 
 import MessageCard from '../../components/chat-card/chat-card.component';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 let ENDPOINT;
 
@@ -31,8 +48,6 @@ const ChatPage = ({
   sendMessageStart,
   addMessage,
 }) => {
-  const [chatMessage, setChatMessage] = useState('');
-
   const [messageInfo, setMessageInfo] = useState({
     content: '',
     sender: '',
@@ -40,13 +55,15 @@ const ChatPage = ({
     type: '',
   });
 
+  const [searchField, setSearchField] = useState('');
+
   const messageEndRef = useRef(null);
 
-  const handleChange = (event) => {
-    setChatMessage(event.target.value);
+  const messagesRef = useRef(null);
 
+  const handleChange = (event) => {
     setMessageInfo({
-      content: chatMessage,
+      content: event.target.value,
       sender: currentUser,
       time: new Date(),
       type: 'Text',
@@ -55,98 +72,111 @@ const ChatPage = ({
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
+    if (!messageInfo.content) return;
     sendMessageStart(messageInfo);
-
-    setChatMessage('');
+    setMessageInfo({ content: '' });
   };
 
-  useEffect(() => {
-    getMessagesStart();
+  const handleSearchChange = (event) => {
+    setSearchField(event.target.value);
+  };
 
-    const socket = io(ENDPOINT);
-
-    socket.on('message', (messageFromServer) => {
-      addMessage(messageFromServer);
-    });
-
-    return () => {
-      socket.emit('disconnect');
-      window.location.reload();
-    };
-  }, [getMessagesStart, addMessage]);
-
-  useLayoutEffect(() => {
+  const scrollDownToBottom = () => {
     messageEndRef.current.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
     });
+  };
+
+  const handleScroll = useCallback(() => {
+    const messagesRefCurrent = messagesRef.current;
+    const messagesScrollHeight = messagesRefCurrent.scrollHeight;
+    const messagesContainerHeight = messagesRefCurrent.clientHeight;
+    const scrollDown = document.querySelector('.scroll-down');
+
+    messagesRefCurrent.scrollTop + messagesContainerHeight >
+    messagesScrollHeight - messagesContainerHeight / 2
+      ? scrollDown.classList.remove('visible')
+      : scrollDown.classList.add('visible');
+  }, [messagesRef]);
+
+  useEffect(() => {
+    getMessagesStart();
+  }, [getMessagesStart]);
+
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+
+    socket.on('message', (messageInfo) => {
+      addMessage(messageInfo);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [addMessage]);
+
+  useEffect(() => {
+    const messagesRefCurrent = messagesRef.current;
+
+    messagesRefCurrent.addEventListener('scroll', handleScroll);
+
+    return () => {
+      messagesRefCurrent.removeEventListener('scroll', handleScroll);
+    };
+  }, [messagesRef, handleScroll]);
+
+  useLayoutEffect(() => {
+    scrollDownToBottom();
   });
 
   return (
     <ChatPageContainer>
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          margin: '0 auto',
-          paddingTop: '50px',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            height: '85%',
-            overflowY: 'scroll',
-          }}
-        >
-          {messages &&
-            messages.map((message) => (
-              <MessageCard key={message._id} message={message} />
-            ))}
-          <div ref={messageEndRef} />
-        </div>
+      <MessagesContainer ref={messagesRef}>
+        {messages &&
+          messages
+            .filter((message) =>
+              message.content.toLowerCase().includes(searchField.toLowerCase())
+            )
+            .map((message) => {
+              return (
+                <MessageCard
+                  key={message._id}
+                  message={message}
+                  currentUser={currentUser}
+                />
+              );
+            })}
+        <div ref={messageEndRef} />
+      </MessagesContainer>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ height: '15%', position: 'relative' }}
-        >
-          <textarea
-            placeholder="Let's start talking"
+      <FormContainer autoComplete='off' onSubmit={handleSubmit}>
+        <InputContainer
+          placeholder='Type your message'
+          type='text'
+          name='chatMessage'
+          lable='chatMessage'
+          value={messageInfo.content}
+          onChange={handleChange}
+        />
+        <div style={{ width: '45%', maxWidth: '180px' }}>
+          <SearchInputContainer
+            autoComplete='off'
+            placeholder='Search'
+            onChange={handleSearchChange}
             type='text'
-            name='chatMessage'
-            lable='chatMessage'
-            value={chatMessage}
-            onChange={handleChange}
-            onKeyUp={(event) => {
-              if (event.keyCode === 13) {
-                if (event.shiftKey) return;
-                handleSubmit(event);
-              }
-            }}
-            style={{
-              height: '100%',
-              width: '100%',
-              border: 'none',
-              borderTop: '1px solid',
-            }}
-          ></textarea>
-          <button
-            type='submit'
-            style={{
-              position: 'absolute',
-              right: '15px',
-              top: '-40px',
-              width: '80px',
-              height: '30px',
-            }}
-          >
-            ENTER
-          </button>
-        </form>
-      </div>
+            value={searchField}
+          />
+        </div>
+        <ButtonContainer type='submit'>Send</ButtonContainer>
+      </FormContainer>
+
+      <ScrollDownBtnContainer
+        onClick={scrollDownToBottom}
+        className='scroll-down'
+      >
+        <FontAwesomeIcon icon={faChevronDown} />
+      </ScrollDownBtnContainer>
     </ChatPageContainer>
   );
 };
